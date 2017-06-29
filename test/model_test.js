@@ -112,4 +112,45 @@ describe("Recipe", function () {
         })
         .catch(done)
     })
-});
+
+    it("can lookup recipes by ingredients size", function (done) {
+        Recipe.create({name: "Pancakes", cookTime: 20, ingredients: [{ingredient: "egg"}, {ingredient: "flour"}, {ingredient: "milk"}]})
+        .then(function () {
+            return Recipe.create({name: "Biscuits", cookTime: 30, ingredients: [{ingredient: "flour"}, {ingredient: "milk"}]})
+        })
+        .then(function () {
+            return Recipe.create({name: "French Toast", cookTime: 10})
+        })
+        .then(function () {
+            return Recipe.find({}).where({ingredients: {$lt: {$size: 3}}})
+        })
+        .then(function (recipes) {
+            assert.equal(recipes.length, 2);
+            done()
+        })
+        .catch(done)
+    })
+
+    it("can perform complex queries", function (done) {
+        Recipe.create({name: "Pancakes", cookTime: 20, ingredients: [{ingredient: "egg"}, {ingredient: "flour"}, {ingredient: "milk"}]})
+        .then(function () {
+            return Recipe.create({name: "Biscuits", cookTime: 30, ingredients: [{ingredient: "flour"}, {ingredient: "milk"}]})
+        })
+        .then(function () {
+            return Recipe.create({name: "French Toast", cookTime: 10})
+        })
+        .then(function () {
+            return Recipe.find({})
+                .where({ingredients: {$lt: {$size: 3}}})
+                .sort("-cookTime")
+                .select("name cookTime")
+                .select("-_id")
+        })
+        .then(function (recipes) {
+            assert.equal(recipes.length, 2);
+            assert.deepEqual(recipes[0].toObject(), {name: "Biscuits", cookTime: 30});
+            done()
+        })
+        .catch(done)
+    })
+})
